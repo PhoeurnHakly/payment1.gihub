@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Utility Bill Payment System</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f4f4f4;
+        }
+        .bill-container {
+            background-color: white;
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+        input, select, button {
+            width: 100%;
+            margin: 10px 0;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+        button {
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+        #paymentResult {
+            margin-top: 15px;
+            padding: 10px;
+            border-radius: 4px;
+        }
+        .success {
+            background-color: #dff0d8;
+            color: #3c763d;
+        }
+        .error {
+            background-color: #f2dede;
+            color: #a94442;
+        }
+    </style>
+</head>
+<body>
+    <div class="bill-container">
+        <h2>Utility Bill Payment</h2>
+        <select id="billType">
+            <option value="">Select Utility Type</option>
+            <option value="electricity">Electricity</option>
+            <option value="water">Water</option>
+            <option value="gas">Gas</option>
+        </select>
+        
+        <input type="text" id="accountNumber" placeholder="Account Number">
+        <input type="number" id="billAmount" placeholder="Bill Amount">
+        <input type="number" id="paymentAmount" placeholder="Payment Amount">
+        
+        <button onclick="processBillPayment()">Pay Bill</button>
+        
+        <div id="paymentResult"></div>
+    </div>
+
+    <script>
+        class BillPaymentSystem {
+            constructor() {
+                this.bills = {};
+            }
+
+            createBill(type, accountNumber, amount) {
+                this.bills[accountNumber] = {
+                    type: type,
+                    amount: amount,
+                    paid: false
+                };
+            }
+
+            payBill(accountNumber, paymentAmount) {
+                const bill = this.bills[accountNumber];
+                
+                if (!bill) {
+                    return { success: false, message: "Bill not found" };
+                }
+
+                if (bill.paid) {
+                    return { success: false, message: "Bill already paid" };
+                }
+
+                if (paymentAmount < bill.amount) {
+                    return { 
+                        success: false, 
+                        message: `Insufficient payment. Required: $${bill.amount.toFixed(2)}`
+                    };
+                }
+
+                bill.paid = true;
+                const change = paymentAmount - bill.amount;
+
+                return {
+                    success: true,
+                    message: `Payment successful. Change: $${change.toFixed(2)}`,
+                    change: change
+                };
+            }
+        }
+
+        const billSystem = new BillPaymentSystem();
+
+        function processBillPayment() {
+            const billType = document.getElementById('billType').value;
+            const accountNumber = document.getElementById('accountNumber').value;
+            const billAmount = parseFloat(document.getElementById('billAmount').value);
+            const paymentAmount = parseFloat(document.getElementById('paymentAmount').value);
+            const resultDiv = document.getElementById('paymentResult');
+
+            if (!billType || !accountNumber || !billAmount || !paymentAmount) {
+                resultDiv.innerHTML = "Please fill in all fields";
+                resultDiv.className = "error";
+                return;
+            }
+
+            billSystem.createBill(billType, accountNumber, billAmount);
+            const result = billSystem.payBill(accountNumber, paymentAmount);
+
+            resultDiv.innerHTML = result.message;
+            resultDiv.className = result.success ? "success" : "error";
+        }
+    </script>
+</body>
+</html>
